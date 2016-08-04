@@ -1,5 +1,5 @@
-package application;
-	
+package streaming;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -24,37 +24,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.google.common.io.Files;
-
-import javafx.application.Application;
-import javafx.stage.Stage;
 import scala.Tuple2;
-import streaming.EventServer;
-import streaming.SparkConfiguration;
 import utils.Constants;
-import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 
-
-public class Main extends Application {
+public class SparkConfiguration {
 	
 	private static final AtomicLong runningMax = new AtomicLong(Long.MIN_VALUE);
-	@Override
-	public void start(Stage primaryStage) {
-		try {
-			BorderPane root = new BorderPane();
-			Scene scene = new Scene(root,400,400);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			primaryStage.setScene(scene);
-			primaryStage.show();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
-	public static void main(String[] args) {
-		
-		
-		//launch(args);
+	public void start() {
 		
 		String dataFile = "/home/cristina/Desktop/Eclipse/license/directory/";
         String tempFile = "/home/cristina/Desktop/Eclipse/license/tempFile/";
@@ -123,7 +100,7 @@ public class Main extends Application {
 			 */
 			private static final long serialVersionUID = 1L;
 
-        	public void call(final JavaPairRDD<String, Integer> rdd, Time time) throws IOException {
+			public void call(final JavaPairRDD<String, Integer> rdd, Time time) throws IOException {
         		Files.append(rdd.first()._1() +"," + rdd.first()._2() + "\n", outputFile, Charset.defaultCharset());
         	}
         });
@@ -131,6 +108,5 @@ public class Main extends Application {
         streamingContext.start();
         streamingContext.awaitTermination();
         streamingContext.close();
-				
 	}
 }

@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
 		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/cristina/Desktop/hadoop-2.6.2/lib/native"/>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
@@ -17,5 +18,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/cristina/Desktop/Eclipse/MyLicense/Project/java-json.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
