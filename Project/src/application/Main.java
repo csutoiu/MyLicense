@@ -1,5 +1,6 @@
 package application;
 	
+import java.awt.Container;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -35,31 +36,28 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 
 
-public class Main extends Application {
+public class Main {
 	
 	private static final AtomicLong runningMax = new AtomicLong(Long.MIN_VALUE);
-	@Override
-	public void start(Stage primaryStage) {
-		try {
-			BorderPane root = new BorderPane();
-			Scene scene = new Scene(root,400,400);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			primaryStage.setScene(scene);
-			primaryStage.show();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	@Override
+//	public void start(Stage primaryStage) {
+//		try {
+//			BorderPane root = new BorderPane();
+//			Scene scene = new Scene(root,400,400);
+//			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+//			primaryStage.setScene(scene);
+//			primaryStage.show();
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
 	
 	public static void main(String[] args) {
 		
+		final Interface inter = new Interface();
 		
-		//launch(args);
-		
-		String dataFile = "/home/cristina/Desktop/Eclipse/license/directory/";
-        String tempFile = "/home/cristina/Desktop/Eclipse/license/tempFile/";
-        final String dbFile = "/home/cristina/Desktop/Eclipse/license/dbFile.csv";
-        final File outputFile = new File(dbFile);
+        final File outputFile = new File(Constants.DATABASE_FILE);
 
         SparkConf sparkConf = new SparkConf()
         		  .setAppName("App")
@@ -67,14 +65,14 @@ public class Main extends Application {
         
         final JavaStreamingContext streamingContext =
                 new JavaStreamingContext(sparkConf, Durations.seconds(3));
-        streamingContext.checkpoint(tempFile);
+        streamingContext.checkpoint(Constants.TEMP_FILE);
 
 
         Logger.getRootLogger().setLevel(Level.ERROR);
         //final SQLContext sqlContext = new org.apache.spark.sql.SQLContext(streamingContext.sparkContext());
         
         
-        JavaPairRDD<String, String> fileNameContentsRDD = streamingContext.sparkContext().wholeTextFiles(dataFile);
+        JavaPairRDD<String, String> fileNameContentsRDD = streamingContext.sparkContext().wholeTextFiles(Constants.DATA_FILE);
         
         JavaRDD<String> files = fileNameContentsRDD.map(new Function<Tuple2<String, String>, String>() {
 
@@ -124,6 +122,16 @@ public class Main extends Application {
 			private static final long serialVersionUID = 1L;
 
         	public void call(final JavaPairRDD<String, Integer> rdd, Time time) throws IOException {
+        		new Thread() {
+                    @Override
+                    public void run() {
+                    	System.out.println("Am intrat pe aici");
+                    	 javafx.application.Application.launch(Interface.class);
+                    }
+                }.start();
+        		
+        		
+        		
         		Files.append(rdd.first()._1() +"," + rdd.first()._2() + "\n", outputFile, Charset.defaultCharset());
         	}
         });

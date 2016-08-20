@@ -5,7 +5,7 @@
 				 "name": "Sera 1", 
 				 "sensors": [	{"stype": "Ext_Tem", 
 						 "units": "\u00b0C", 
-						 "value": 21.2 }, 
+						 "value": 40.2 }, 
 						{"stype": "Ext_Umi", 
 						 "units": "%", 
 						 "value": 65 }, 

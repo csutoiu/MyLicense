@@ -12,7 +12,7 @@ public class EventServer {
 
 	private final Executor SERVER = Executors.newSingleThreadExecutor();
 	private final static int PORT = 10001;
-	private static final long EVENT_PERIOD_SECONDS = 3000;
+	private static final long EVENT_PERIOD_SECONDS = 5000;
 	private BlockingQueue<String> fileEvents;
 	
 	public EventServer(BlockingQueue<String> fileEvents) {

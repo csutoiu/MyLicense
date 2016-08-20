@@ -4,7 +4,7 @@ public class Constants {
 
 	public static final String DATA_FILE = "/home/cristina/Desktop/Eclipse/MyLicense/Project/directory/";
 	public static final String DATABASE_FILE = "/home/cristina/Desktop/Eclipse/MyLicense/Project/dbFile.csv";
-	
+	public static final String TEMP_FILE = "/home/cristina/Desktop/Eclipse/MyLicense/Project/tempFile/";
 	
 	/* Sensor fields */
 	final static public String SENSOR_TYPE = "stype";
