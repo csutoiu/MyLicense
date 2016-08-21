@@ -29,6 +29,7 @@ import com.google.common.io.Files;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import scala.Tuple2;
+import scala.Tuple6;
 import streaming.EventServer;
 import streaming.SparkConfiguration;
 import utils.Constants;
@@ -57,6 +58,13 @@ public class Main {
 		
 		final Interface inter = new Interface();
 		
+		new Thread() {
+            @Override
+            public void run() {
+            	 javafx.application.Application.launch(Interface.class);
+            }
+        }.start();
+		
         final File outputFile = new File(Constants.DATABASE_FILE);
 
         SparkConf sparkConf = new SparkConf()
@@ -77,7 +85,7 @@ public class Main {
         JavaRDD<String> files = fileNameContentsRDD.map(new Function<Tuple2<String, String>, String>() {
 
 			private static final long serialVersionUID = 1L;
-			public String call(Tuple2<String, String> fileNameContent) throws Exception {
+			public String call(Tuple2<String, String> fileNameContent) {
                 return fileNameContent._2();
             }
         });
@@ -90,49 +98,57 @@ public class Main {
         JavaReceiverInputDStream<String> lines = streamingContext.socketTextStream("localhost", 10001);
         ;
         
-        JavaPairDStream<String, Integer> pairs = lines.mapToPair(new PairFunction<String, String, Integer>() {
+        JavaPairDStream<String, Sensor> pairs = lines.mapToPair(new PairFunction<String, String, Sensor>() {
         	/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
-			public Tuple2<String, Integer> call(String t) throws Exception {
-        		JSONObject tempJson = new JSONObject(t);
-                JSONObject recordJson = tempJson.getJSONObject("record");
-                JSONArray sdataJson = recordJson.getJSONArray("sdata");
-                JSONArray sensorsJson = ((JSONObject)sdataJson.get(0)).getJSONArray("sensors");
-                for(int i = 0;i < sensorsJson.length();i++) { 
-                	JSONObject json = sensorsJson.getJSONObject(i);
-                	if(json.get(Constants.SENSOR_TYPE).equals("Ext_Tem")) {
-                		runningMax.set(Math.max(runningMax.get(), json.getInt(Constants.VALUE)));
-                		System.out.println("Max: " + runningMax.get());
-                		
-                		return new Tuple2<String, Integer>(json.getString(Constants.SENSOR_TYPE), 
-                				json.getInt(Constants.VALUE));
-                	}
-                }
-        		return null;
+			public Tuple2<String, Sensor> call(String t) {
+				
+				try {
+					JSONObject tempJson = new JSONObject(t);
+	                JSONObject recordJson = tempJson.getJSONObject("record");
+	                JSONArray sdataJson = recordJson.getJSONArray("sdata");
+	                JSONArray sensorsJson = ((JSONObject)sdataJson.get(0)).getJSONArray("sensors");
+	                for(int i = 0;i < sensorsJson.length();i++) { 
+	                	JSONObject json = sensorsJson.getJSONObject(i);
+	                	if(json.get(Constants.SENSOR_TYPE).equals("Ext_Tem")) {
+	                		runningMax.set(Math.max(runningMax.get(), json.getInt(Constants.VALUE)));
+	                		System.out.println("Max: " + runningMax.get());
+	                		
+	                		
+	                		Sensor sensor = new Sensor(json.getString(Constants.SENSOR_TYPE), json.getInt(Constants.VALUE));
+	                		return new Tuple2<String, Sensor>("sensor", sensor);
+	                		
+	                		
+	                	}
+	                }
+	        		return null;
+				} catch(Exception e) {
+					return null;
+				}
+        		
         	}
         });
         
-        pairs.foreachRDD(new VoidFunction2<JavaPairRDD<String, Integer>, Time>() {
+        pairs.foreachRDD(new VoidFunction2<JavaPairRDD<String, Sensor>, Time>() {
         	/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
-        	public void call(final JavaPairRDD<String, Integer> rdd, Time time) throws IOException {
-        		new Thread() {
-                    @Override
-                    public void run() {
-                    	System.out.println("Am intrat pe aici");
-                    	 javafx.application.Application.launch(Interface.class);
-                    }
-                }.start();
+        	public void call(final JavaPairRDD<String, Sensor> rdd, Time time) {
+        		
+        		try {
+        			Sensor sensor = rdd.first()._2();
+            		System.out.println("Value of sensor is " + sensor.value);
+            		//Files.append(rdd.first()._1() +"," + rdd.first()._2() + "\n", outputFile, Charset.defaultCharset());
+        		} catch(Exception e) {
+        			
+        		}
         		
         		
-        		
-        		Files.append(rdd.first()._1() +"," + rdd.first()._2() + "\n", outputFile, Charset.defaultCharset());
         	}
         });
         
